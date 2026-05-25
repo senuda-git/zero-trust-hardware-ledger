@@ -1,0 +1,55 @@
+<resources>
+    <string name="app_name">HWLedger</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Welcome to\nHWLedger</string>
+    <string name="onboarding_secure_title">Secure Scanning</string>
+    <string name="onboarding_secure_desc">Instantly verify hardware authenticity via encrypted QR codes.</string>
+    <string name="onboarding_zt_title">Zero-Trust Verification</string>
+    <string name="onboarding_zt_desc">Our algorithm ensures data hasn\'t been tampered with since the ledger was created.</string>
+    <string name="btn_get_started">Get Started</string>
+
+    <!-- Home -->
+    <string name="home_header">Ledger</string>
+    <string name="home_verify_title">Verify Hardware</string>
+    <string name="home_verify_desc">Scan a Ledger QR code</string>
+    <string name="home_history_label">Recent Scans</string>
+    <string name="home_view_history">View History</string>
+
+    <!-- History -->
+    <string name="history_title">History</string>
+    <string name="history_empty">No recent scans</string>
+    <string name="unknown_device">Unknown Device</string>
+
+    <!-- Scanner -->
+    <string name="scanner_status">Scanning Ledger QR&#8230;</string>
+    <string name="permission_denied">Permission denied</string>
+    <string name="status_decrypting">[ DECRYPTING&#8230; ]</string>
+    <string name="status_tamper">[ TAMPER DETECTED ]</string>
+    <string name="status_scanning">[ SCANNING&#8230; ]</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Verification Result</string>
+    <string name="status_authentic">Authentic Device</string>
+    <string name="stability_label">Stability History</string>
+    <string name="no_issues_found">No critical issues found</string>
+    <string name="hardware_details_label">Hardware Details</string>
+    <string name="btn_done">Done</string>
+
+    <string name="no_data_scanned">No Hardware Data Scanned.</string>
+    <string name="parsing_error">Parsing Error: %1$s</string>
+    <string name="unknown_cpu">Unknown CPU</string>
+    <string name="unknown_gpu">Unknown GPU</string>
+    <string name="unknown_ram">Unknown RAM</string>
+    <string name="unknown_board">Unknown Board</string>
+    <string name="hardware_info_format">CPU: %1$s\nGPU: %2$s\nRAM: %3$s\nBoard: %4$s</string>
+    <string name="crashes_format">Critical System Crashes: %1$d</string>
+    <string name="advice_excellent">Excellent Condition. Safe to purchase.</string>
+    <string name="advice_moderate">Moderate Wear. Inspect device carefully.</string>
+    <string name="advice_bad">Highly Unstable. Do not buy.</string>
+
+    <!-- Errors -->
+    <string name="invalid_qr_format">Invalid QR Format</string>
+    <string name="tamper_detected_hash">TAMPER DETECTED: Hashes do not match.</string>
+    <string name="decryption_failed">Decryption Failed: %1$s</string>
+</resources>

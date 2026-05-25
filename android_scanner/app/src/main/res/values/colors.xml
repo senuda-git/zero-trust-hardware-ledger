@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Apple-inspired Palette -->
+    <color name="apple_black">#1D1D1F</color>
+    <color name="apple_gray">#86868B</color>
+    <color name="apple_light_gray">#F5F5F7</color>
+    <color name="apple_blue">#007AFF</color>
+    <color name="apple_green">#34C759</color>
+    <color name="apple_orange">#FF9F0A</color>
+    <color name="apple_red">#FF3B30</color>
+
+    <!-- Semantic Colors -->
+    <color name="background">@color/apple_light_gray</color>
+    <color name="surface">@color/white</color>
+    <color name="text_primary">@color/apple_black</color>
+    <color name="text_secondary">@color/apple_gray</color>
+</resources>

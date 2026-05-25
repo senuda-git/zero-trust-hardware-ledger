@@ -1,0 +1,137 @@
+====================================================
+      ZERO-TRUST HARDWARE DIAGNOSTIC LEDGER         
+====================================================
+Generated On: 2026-05-25 09:04:08
+
+[SYSTEM]
+----------------------------------------------------
+  > OS Name                  : Windows 10
+  > Architecture             : 64bit
+  > Timeline                 :
+      - OS Original Install Date: 2025-09-26
+      - Current Session Uptime: 13:10:57
+      - Last Boot Time       : 2026-05-24 19:53:10
+      - Normie Warning       : None
+
+[MOTHERBOARD]
+----------------------------------------------------
+  > Manufacturer             : Hewlett-Packard
+  > Product Model            : 339A
+  > Serial Number            : 6CR3195YDM
+  > BIOS Version             : K01 v02.05
+  > BIOS Release Date        : 2012-05-07
+  > Hardware Age             : 14 Years Old
+  > BIOS Vendor              : Hewlett-Packard
+
+[CPU]
+----------------------------------------------------
+  > Name                     : Intel(R) Core(TM) i5-3470 CPU @ 3.20GHz
+  > Cores                    : 4
+  > Threads                  : 4
+  > MaxClock                 : 3201 MHz
+  > Cache L1                 : 1024 KB
+  > Cache L2                 : 6144 KB
+  > ACPI Core Temp           : Unknown (Blocked by BIOS/Controller)
+
+[GPU]
+----------------------------------------------------
+  -- Item 1 --
+     * Model                 : Intel(R) HD Graphics
+     * VRAM                  : 2.06 GB
+     * Driver Version        : 10.18.10.5161
+     * Status                : OK
+     * Video Mode            : 1280 x 1024 x 4294967296 colors
+     * Manufacturer          : Intel Corporation
+
+
+[DISPLAY]
+----------------------------------------------------
+  -- Item 1 --
+     * Monitor Name          : Intel(R) HD Graphics
+     * Manufacturer          : Intel Corporation
+     * Resolution            : 1280x1024
+     * Refresh Rate          : 60 Hz
+     * Pixel Depth           : 32 bits
+     * True Panel ID EDID    : HWP 2856
+     * Status                : OK
+
+
+[RAM PHYSICAL]
+----------------------------------------------------
+  -- Item 1 --
+     * Capacity              : 2 GB
+     * Speed                 : 1067 MHz
+     * Manufacturer          : Samsung
+     * Part Number           : M378B5673EH1-CF8
+     * Serial Number         : 83F640ED
+
+  -- Item 2 --
+     * Capacity              : 2 GB
+     * Speed                 : 1067 MHz
+     * Manufacturer          : Samsung
+     * Part Number           : M378B5673EH1-CF8
+     * Serial Number         : 83F708DA
+
+  -- Item 3 --
+     * Capacity              : 4 GB
+     * Speed                 : 1067 MHz
+     * Manufacturer          : Samsung
+     * Part Number           : M378B5173DB0-CK0
+     * Serial Number         : 93F847C7
+
+
+[RAM USAGE]
+----------------------------------------------------
+  > Total Installed          : 7.88 GB
+  > Currently Available      : 1.57 GB
+  > Usage Percentage         : 80.1%
+
+[BATTERY]
+----------------------------------------------------
+  > Status                   : No Battery Detected (Likely a Desktop or Failed ACPI)
+
+[STORAGE]
+----------------------------------------------------
+  -- Item 1 --
+     * Model                 : ST3500413AS
+     * Serial Number         : 5VMV7FL0
+     * Size GB               : 465.76
+     * Interface             : IDE
+     * Type                  : HDD
+     * OS Health Status      : Healthy
+     * Wear Level            : N/A (HDD)
+     * Normie Warning        : CRITICAL: Mechanical or IDE drive detected. Expect severe performance bottlenecks.
+
+  -- Item 2 --
+     * Model                 : ST3500413AS
+     * Serial Number         : 5VMV7FL0
+     * Size GB               : 465.76
+     * Interface             : IDE
+     * Type                  : HDD
+     * OS Health Status      : Healthy
+     * Wear Level            : N/A (HDD)
+     * Normie Warning        : CRITICAL: Mechanical or IDE drive detected. Expect severe performance bottlenecks.
+
+
+[NETWORK ADAPTERS]
+----------------------------------------------------
+  -- Item 1 --
+     * Adapter Name          : Intel(R) 82579LM Gigabit Network Connection
+     * Manufacturer          : Intel Corporation
+     * MAC Current           : 88:51:FB:51:A1:42
+     * MAC Hardware Burned   : Unknown
+     * MAC Spoofed           : False
+     * Connection Status     : Connected
+
+
+[ABUSE HISTORY]
+----------------------------------------------------
+  > Critical Power Failures  : 50
+  > Unexpected Shutdowns     : 49
+  > Blue Screens of Death    : 1
+  > Disk Bad Blocks Logged   : 7
+  > Historical Thermal Throttling: 0
+  > Fatal Hardware Errors    : 0
+  > Total Crash Count        : 100
+  > System Stability Rating  : CRITICAL WARNING: 7 Bad Disk Blocks. Motherboard I/O or Drive is dying.
+
