@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hardware Ledger | Trust Verification</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <style>
+        :root {
+            --bg: #F5F5F7;
+            --card-bg: #FFFFFF;
+            --text-main: #1D1D1F;
+            --text-sub: #86868B;
+            --green: #34C759;
+            --orange: #FF9F0A;
+            --red: #FF3B30;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px;
+        }
+        .header { font-size: 28px; font-weight: bold; margin-bottom: 32px; text-align: center; }
+        .score-container { text-align: center; margin-bottom: 40px; }
+        .score-number { font-size: 96px; font-weight: 300; line-height: 1; }
+        .score-label { font-size: 18px; color: var(--text-sub); margin-top: 8px; }
+        
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .card-title { font-size: 16px; font-weight: bold; margin-bottom: 8px; }
+        .card-text { font-size: 14px; color: var(--text-sub); line-height: 1.6; }
+        
+        .warning-card { background-color: #FFE5E5; color: var(--red); display: none; }
+        .loading { text-align: center; margin-top: 50px; font-size: 18px; color: var(--text-sub); }
+    </style>
+</head>
+<body>
+
+    <div id="loading" class="loading">Decrypting Zero-Trust Payload...</div>
+
+    <div id="dashboard" style="display: none;">
+        <div class="header">Hardware Ledger</div>
+        
+        <div class="score-container">
+            <div id="trustScore" class="score-number">--</div>
+            <div id="trustAdvice" class="score-label">--</div>
+        </div>
+
+        <div id="warningCard" class="card warning-card">
+            <div class="card-title">⚠️ CRITICAL WARNING</div>
+            <div id="warningText" style="font-weight: bold;"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Forensic Stability</div>
+            <div id="stabilitySpecs" class="card-text"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Hardware Manifest</div>
+            <div id="hardwareSpecs" class="card-text"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. CRYPTOGRAPHIC ENGINE ---
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function verifyAndUnpack() {
+            try {
+                // Grab the URL-Safe Base64 string from the URL
+                const urlParams = new URLSearchParams(window.location.search);
+                let encodedData = urlParams.get('d');
+                
+                if (!encodedData) throw new Error("No hardware data found in URL.");
+
+                // Convert URL-Safe Base64 back to Standard Base64 for JS decoding
+                encodedData = encodedData.replace(/-/g, '+').replace(/_/g, '/');
+                
+                // Decode outer Base64 and Decompress Zlib
+                const compressedBytes = Uint8Array.from(atob(encodedData), c => c.charCodeAt(0));
+                const jsonString = new TextDecoder().decode(pako.inflate(compressedBytes));
+                
+                // Parse outer package
+                const packageObj = JSON.parse(jsonString);
+                const payloadB64 = packageObj.p; // The inner Base64 armored string
+                const providedSignature = packageObj.s;
+
+                // Hash the string to verify zero-trust integrity
+                const calculatedSignature = await sha256(payloadB64);
+                
+                if (calculatedSignature !== providedSignature) {
+                    throw new Error("TAMPER DETECTED: Hardware signature is invalid.");
+                }
+
+                // If safe, decode the inner armor to get the JSON payload
+                const rawJsonStr = decodeURIComponent(escape(atob(payloadB64)));
+                const payload = JSON.parse(rawJsonStr);
+                
+                renderDashboard(payload);
+
+            } catch (error) {
+                document.getElementById('loading').innerHTML = `<span style="color:red; font-weight:bold;">❌ Decryption Failed:</span><br><br>${error.message}`;
+            }
+        }
+
+        // --- 2. TRUST ALGORITHM & UI RENDERER ---
+        function renderDashboard(data) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+
+            // Extract Forensics
+            const abuse = data.ab || {};
+            const pwr = abuse.Critical_Power_Failures || 0;
+            const unexpected = abuse.Unexpected_Shutdowns || 0;
+            const thermal = abuse.Historical_Thermal_Throttling || 0;
+            const whea = abuse.Fatal_Hardware_Errors || 0;
+            const badBlocks = abuse.Disk_Bad_Blocks_Logged || 0;
+            const totalCrashes = pwr + unexpected;
+
+            // Extract Hardware Specs
+            const cpu = data.cpu || {};
+            const cpuName = cpu.Name || "Unknown CPU";
+            const vmSpoof = cpu.VM_Spoof_Detected?.includes("CRITICAL");
+            
+            let gpuName = "Unknown GPU";
+            if (data.gpu && data.gpu.length > 0) gpuName = data.gpu[0].Model;
+            
+            const ram = data.ram_u?.Total_Installed || "Unknown RAM";
+            const mobo = data.mb?.Product_Model || "Unknown Board";
+
+            // Algorithm
+            let score = 100;
+            let isCritical = false;
+            let criticalMsg = "";
+
+            if (thermal > 0) { score = 0; isCritical = true; criticalMsg = `Cooling Failed (${thermal} Thermal Events)`; }
+            if (whea > 0) { score = 0; isCritical = true; criticalMsg = "Fatal Silicon Errors (WHEA)"; }
+            if (vmSpoof) { score = 0; isCritical = true; criticalMsg = "VM SPOOF DETECTED. Fake Hardware."; }
+            if (badBlocks > 0) { isCritical = true; criticalMsg = `${badBlocks} Bad Disk Blocks. Dying Drive.`; }
+
+            score -= (badBlocks * 15);
+            score -= (totalCrashes * 0.5);
+            score = Math.max(0, Math.min(100, Math.floor(score))); // Clamp 0-100
+
+            // Apply to UI
+            const scoreElement = document.getElementById('trustScore');
+            const adviceElement = document.getElementById('trustAdvice');
+
+            scoreElement.innerText = score;
+
+            if (score >= 90) {
+                scoreElement.style.color = "var(--green)";
+                adviceElement.innerText = "Excellent Condition. Safe to buy.";
+            } else if (score >= 70) {
+                scoreElement.style.color = "var(--orange)";
+                adviceElement.innerText = "Moderate Wear. Inspect carefully.";
+            } else {
+                scoreElement.style.color = "var(--red)";
+                adviceElement.innerText = "CRITICAL DANGER. Do not buy.";
+            }
+
+            if (isCritical) {
+                document.getElementById('warningCard').style.display = 'block';
+                document.getElementById('warningText').innerText = criticalMsg;
+            }
+
+            document.getElementById('stabilitySpecs').innerHTML = `
+                Total Crashes/Power Losses: <b>${totalCrashes}</b><br>
+                Bad Disk Blocks: <b>${badBlocks}</b><br>
+                Thermal Throttling Events: <b>${thermal}</b>
+            `;
+
+            document.getElementById('hardwareSpecs').innerHTML = `
+                CPU: <b>${cpuName}</b><br>
+                GPU: <b>${gpuName}</b><br>
+                RAM: <b>${ram}</b><br>
+                Board: <b>${mobo}</b>
+            `;
+        }
+
+        // Initialize App
+        window.onload = verifyAndUnpack;
+    </script>
+</body>
+</html>
