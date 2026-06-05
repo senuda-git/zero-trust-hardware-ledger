@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Zero-Trust Hardware Ledger - Verify second-hand PC hardware with kernel-level telemetry.">
     <title>Zero-Trust Hardware Ledger</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,174 +26,232 @@
     </script>
 
     <style>
-        .page-view { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .page-view { display: none; animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .page-view.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(8px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        /* Custom scrollbar for the expert tables */
+        .expert-table-container::-webkit-scrollbar { height: 8px; }
+        .expert-table-container::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
     </style>
 </head>
 
 <body class="bg-appleBg text-slate-800 font-sans antialiased min-h-screen flex flex-col">
 
     <nav class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
-                <div class="flex items-center cursor-pointer" onclick="navigateTo('home')">
+                <button class="flex items-center hover:opacity-80 transition" onclick="navigateTo('home')" aria-label="Home">
                     <i class="fa-solid fa-shield-halved text-blue-600 text-2xl mr-2"></i>
                     <span class="font-bold text-xl tracking-tight text-slate-900">HWLedger</span>
-                </div>
-                <div class="hidden sm:flex sm:items-center sm:space-x-8 font-medium text-slate-500">
+                </button>
+                
+                <div class="hidden sm:flex sm:items-center sm:space-x-6 font-medium text-slate-500">
                     <button onclick="navigateTo('home')" class="hover:text-blue-600 transition">Home</button>
                     <button onclick="navigateTo('architecture')" class="hover:text-blue-600 transition">Architecture</button>
                     <button onclick="navigateTo('contact')" class="hover:text-blue-600 transition">Developer</button>
-                    <button onclick="navigateTo('contact')" class="hover:text-blue-600 transition">Developer</button>
-                    <a href="https://github.com/senuda-git/zero-trust-hardware-ledger/releases/latest" target="_blank" class="inline-block mt-2 px-8 py-4 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition shadow-lg">
-                        Download Windows Scanner (.exe)
+                    <a href="https://github.com/senuda-git/zero-trust-hardware-ledger/releases/latest" target="_blank" rel="noopener noreferrer" class="ml-4 px-6 py-2 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition shadow-sm text-sm">
+                        Download Scanner
                     </a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <main class="flex-grow max-w-5xl mx-auto px-4 py-8 w-full">
+    <main class="flex-grow max-w-6xl mx-auto px-4 py-8 w-full">
 
-        <div id="home-view" class="page-view active text-center py-12">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+        <section id="home-view" class="page-view active text-center py-12 lg:py-20">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 tracking-tight mb-6">
                 Don't Get Scammed.<br><span class="text-blue-600">Verify Before You Buy.</span>
             </h1>
-            <p class="text-lg text-slate-500 max-w-2xl mx-auto mb-10">
+            <p class="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto mb-10">
                 The world's first Zero-Trust diagnostic ledger. We bypass spoofed operating systems using kernel-level telemetry to verify second-hand PC hardware.
             </p>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-12 text-left">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <i class="fa-solid fa-microchip text-blue-500 text-3xl mb-4"></i>
-                    <h3 class="font-bold text-lg mb-2">Kernel-Level Truth</h3>
-                    <p class="text-slate-500 text-sm">We query raw Silicon architecture and Windows WHEA error logs, ignoring spoofed System info.</p>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <i class="fa-solid fa-link-slash text-appleOrange text-3xl mb-4"></i>
-                    <h3 class="font-bold text-lg mb-2">100% Offline</h3>
-                    <p class="text-slate-500 text-sm">Data is securely transmitted via QR code. No Wi-Fi required, protecting you in public meetups.</p>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <i class="fa-solid fa-lock text-appleGreen text-3xl mb-4"></i>
-                    <h3 class="font-bold text-lg mb-2">Cryptographic Seal</h3>
-                    <p class="text-slate-500 text-sm">Every payload is sealed with SHA-256 encryption. If a seller deletes a crash log, the hash breaks.</p>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto mt-16 text-left">
+                <article class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+                    <i class="fa-solid fa-microchip text-blue-500 text-4xl mb-6"></i>
+                    <h3 class="font-bold text-xl mb-3">Kernel-Level Truth</h3>
+                    <p class="text-slate-500 leading-relaxed">We query raw Silicon architecture and Windows WHEA error logs, ignoring spoofed System info.</p>
+                </article>
+                <article class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+                    <i class="fa-solid fa-link-slash text-appleOrange text-4xl mb-6"></i>
+                    <h3 class="font-bold text-xl mb-3">100% Offline</h3>
+                    <p class="text-slate-500 leading-relaxed">Data is securely transmitted via QR code. No Wi-Fi required, protecting you in public meetups.</p>
+                </article>
+                <article class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+                    <i class="fa-solid fa-lock text-appleGreen text-4xl mb-6"></i>
+                    <h3 class="font-bold text-xl mb-3">Cryptographic Seal</h3>
+                    <p class="text-slate-500 leading-relaxed">Every payload is sealed with SHA-256 encryption. If a seller deletes a crash log, the hash breaks.</p>
+                </article>
             </div>
-        </div>
+        </section>
 
-        <div id="loading-view" class="page-view text-center py-20">
-            <i class="fa-solid fa-circle-notch fa-spin text-blue-600 text-5xl mb-4"></i>
-            <h2 class="text-xl font-bold text-slate-700">Decrypting Zero-Trust Payload...</h2>
-            <p id="loading-error" class="text-appleRed mt-4 font-semibold hidden"></p>
-        </div>
-
-        <div id="dashboard-view" class="page-view">
+        <section id="loading-view" class="page-view text-center py-24">
+            <i class="fa-solid fa-circle-notch fa-spin text-blue-600 text-6xl mb-6"></i>
+            <h2 class="text-2xl font-bold text-slate-800">Decrypting Payload...</h2>
             
-            <div class="flex justify-center mb-8">
-                <div class="bg-slate-200 p-1 rounded-full flex space-x-1">
-                    <button id="tab-normie" onclick="switchDashboardTab('normie')" class="px-6 py-2 rounded-full font-semibold text-sm bg-white shadow text-slate-900 transition">Executive Summary</button>
-                    <button id="tab-expert" onclick="switchDashboardTab('expert')" class="px-6 py-2 rounded-full font-semibold text-sm text-slate-500 hover:text-slate-900 transition">Advanced Forensics</button>
+            <div id="loading-error-container" class="hidden mt-6 inline-flex items-center bg-red-50 text-appleRed px-4 py-3 rounded-lg">
+                <i class="fa-solid fa-triangle-exclamation mr-3 text-xl"></i>
+                <span id="loading-error-text" class="font-semibold text-left"></span>
+            </div>
+        </section>
+
+        <section id="dashboard-view" class="page-view">
+            
+            <div class="flex justify-center mb-10">
+                <div class="bg-slate-200 p-1 rounded-full flex space-x-1 shadow-inner">
+                    <button id="tab-normie" onclick="switchDashboardTab('normie')" class="px-8 py-2.5 rounded-full font-bold text-sm bg-white shadow-sm text-slate-900 transition">Executive Summary</button>
+                    <button id="tab-expert" onclick="switchDashboardTab('expert')" class="px-8 py-2.5 rounded-full font-bold text-sm text-slate-500 hover:text-slate-900 transition">Advanced Forensics</button>
                 </div>
             </div>
 
-            <div id="ui-warning-banner" class="hidden bg-red-50 border border-red-200 rounded-2xl p-5 mb-8 flex items-start">
-                <i class="fa-solid fa-triangle-exclamation text-appleRed text-2xl mr-4 mt-1"></i>
-                <div>
-                    <h3 class="font-bold text-appleRed text-lg">CRITICAL HARDWARE WARNING</h3>
-                    <p id="ui-warning-text" class="text-red-700 text-sm mt-1"></p>
+            <div id="ui-warning-banner" class="hidden bg-red-50 border-l-4 border-appleRed rounded-r-2xl p-6 mb-8 shadow-sm">
+                <div class="flex items-start">
+                    <i class="fa-solid fa-triangle-exclamation text-appleRed text-3xl mr-4 mt-1"></i>
+                    <div>
+                        <h3 class="font-black text-appleRed text-lg uppercase tracking-wide">Critical Hardware Warning</h3>
+                        <p id="ui-warning-text" class="text-red-800 font-medium mt-1"></p>
+                    </div>
                 </div>
             </div>
 
-            <div id="content-normie">
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 text-center mb-6">
-                    <p class="text-slate-400 font-bold uppercase tracking-wider text-xs mb-2">Zero-Trust Score</p>
-                    <h1 id="ui-score" class="text-8xl font-black text-appleGreen mb-2">--</h1>
-                    <p id="ui-advice" class="text-xl font-medium text-slate-600">Waiting for scan...</p>
+            <div id="content-normie" class="space-y-6">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-10 text-center relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-slate-100" id="score-header-bar"></div>
+                    <p class="text-slate-400 font-bold uppercase tracking-widest text-xs mb-4 mt-2">Zero-Trust Trust Score</p>
+                    <h1 id="ui-score" class="text-9xl font-black text-appleGreen mb-4 tracking-tighter">--</h1>
+                    <p id="ui-advice" class="text-2xl font-semibold text-slate-600">Awaiting Telemetry</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                        <h3 class="font-bold text-slate-900 mb-4 border-b pb-2">At a Glance</h3>
-                        <p class="text-sm text-slate-500 mb-2"><span class="font-bold text-slate-700">CPU:</span> <span id="ui-cpu"></span></p>
-                        <p class="text-sm text-slate-500 mb-2"><span class="font-bold text-slate-700">GPU:</span> <span id="ui-gpu"></span></p>
-                        <p class="text-sm text-slate-500 mb-2"><span class="font-bold text-slate-700">RAM:</span> <span id="ui-ram"></span></p>
-                        <p class="text-sm text-slate-500"><span class="font-bold text-slate-700">Board:</span> <span id="ui-board"></span></p>
-                    </div>
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                        <h3 class="font-bold text-slate-900 mb-4 border-b pb-2">System Stability</h3>
-                        <p class="text-sm text-slate-500 mb-2"><span class="font-bold text-slate-700">Total Crashes/Power Failures:</span> <span id="ui-crashes"></span></p>
-                        <p class="text-sm text-slate-500 mb-2"><span class="font-bold text-slate-700">Bad Disk Blocks:</span> <span id="ui-blocks"></span></p>
-                        <p class="text-sm text-slate-500"><span class="font-bold text-slate-700">Thermal Throttling Events:</span> <span id="ui-thermal"></span></p>
-                    </div>
+                    <article class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-slate-900 text-lg mb-5 flex items-center border-b pb-3">
+                            <i class="fa-solid fa-server text-blue-500 mr-3"></i> Hardware Manifest
+                        </h3>
+                        <ul class="space-y-4">
+                            <li class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Processor (CPU)</span> <span id="ui-cpu" class="font-medium text-slate-800"></span></li>
+                            <li class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Graphics (GPU)</span> <span id="ui-gpu" class="font-medium text-slate-800"></span></li>
+                            <li class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Memory (RAM)</span> <span id="ui-ram" class="font-medium text-slate-800"></span></li>
+                            <li class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Motherboard</span> <span id="ui-board" class="font-medium text-slate-800"></span></li>
+                            <li class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Primary Storage</span> <span id="ui-storage" class="font-medium text-slate-800"></span></li>
+                        </ul>
+                    </article>
+                    
+                    <article class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-slate-900 text-lg mb-5 flex items-center border-b pb-3">
+                            <i class="fa-solid fa-heart-pulse text-appleRed mr-3"></i> Forensic Stability
+                        </h3>
+                        <ul class="space-y-5">
+                            <li class="flex justify-between items-center">
+                                <span class="font-medium text-slate-600">Total Crashes / Power Fails</span> 
+                                <span id="ui-crashes" class="bg-slate-100 text-slate-800 py-1 px-3 rounded-lg font-bold"></span>
+                            </li>
+                            <li class="flex justify-between items-center">
+                                <span class="font-medium text-slate-600">Bad Disk Blocks (S.M.A.R.T)</span> 
+                                <span id="ui-blocks" class="bg-slate-100 text-slate-800 py-1 px-3 rounded-lg font-bold"></span>
+                            </li>
+                            <li class="flex justify-between items-center">
+                                <span class="font-medium text-slate-600">Thermal Throttling Events</span> 
+                                <span id="ui-thermal" class="bg-slate-100 text-slate-800 py-1 px-3 rounded-lg font-bold"></span>
+                            </li>
+                        </ul>
+                    </article>
                 </div>
             </div>
 
-            <div id="content-expert" class="hidden">
-                <div class="bg-slate-900 rounded-2xl p-6 shadow-inner text-green-400 font-mono text-xs overflow-x-auto">
-                    <p class="text-slate-400 mb-4">// RAW KERNEL TELEMETRY PAYLOAD</p>
-                    <pre id="ui-raw-json">Awaiting Payload...</pre>
+            <div id="content-expert" class="hidden space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                    <h3 class="font-bold text-slate-900 text-xl mb-2">Raw Telemetry Ledger</h3>
+                    <p class="text-slate-500 text-sm mb-6">Direct extraction from Windows Management Instrumentation (WMI) and ACPI tables.</p>
+                    
+                    <div id="expert-data-grid" class="space-y-8"></div>
                 </div>
             </div>
+        </section>
 
-        </div>
-
-        <div id="architecture-view" class="page-view bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-            <h2 class="text-2xl font-bold mb-4">Zero-Trust Architecture</h2>
-            <p class="text-slate-600 mb-4">Traditional diagnostic tools (HWiNFO, CPU-Z) trust the Windows operating system. If a scammer alters the OS registry or uses a Virtual Machine, standard tools output fake data.</p>
-            <p class="text-slate-600 mb-4">This ledger bypasses the OS presentation layer. It directly queries the WMI root namespace and raw Windows Hardware Error Architecture (WHEA) logs. It then cryptographically hashes the result before compressing it into a Base64 armored QR code.</p>
-        </div>
-
-        <div id="guide-view" class="page-view bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-            <h2 class="text-2xl font-bold mb-4 text-blue-600"><i class="fa-solid fa-clipboard-check mr-2"></i>Physical Buyer's Checklist</h2>
-            <ul class="space-y-4 text-slate-600">
-                <li><strong class="text-slate-900">1. The 15-Minute Stress Test:</strong> Open 30 browser tabs and a 4K video. Let it run for 15 minutes. If it crashes or the fans sound broken, walk away.</li>
-                <li><strong class="text-slate-900">2. The "Smell" Test:</strong> Smell the exhaust vents. An ozone-like or burnt metallic smell indicates blown motherboard capacitors.</li>
-                <li><strong class="text-slate-900">3. I/O Inspection:</strong> Shine a flashlight into USB/HDMI ports. Bent pins will permanently short-circuit the board.</li>
-                <li><strong class="text-slate-900">4. Mechanical Drives:</strong> If our scanner detects an HDD (Hard Disk Drive), demand a massive discount. They are obsolete and prone to physical failure.</li>
-            </ul>
-        </div>
-
-        <div id="contact-view" class="page-view text-center py-12">
-            <h2 class="text-3xl font-bold mb-2">Rathnayake R.M.S.D.</h2>
-            <p class="text-slate-500 mb-8">Systems Engineer & Developer</p>
-            <div class="flex justify-center space-x-6">
-                <a href="#" class="text-slate-400 hover:text-blue-600 text-3xl transition"><i class="fa-brands fa-github"></i></a>
-                <a href="#" class="text-slate-400 hover:text-blue-600 text-3xl transition"><i class="fa-brands fa-linkedin"></i></a>
-                <a href="#" class="text-slate-400 hover:text-blue-600 text-3xl transition"><i class="fa-solid fa-envelope"></i></a>
+        <section id="architecture-view" class="page-view max-w-4xl mx-auto">
+            <div class="bg-white p-10 rounded-3xl shadow-sm border border-slate-100">
+                <h2 class="text-3xl font-extrabold mb-6 text-slate-900">Zero-Trust Architecture</h2>
+                <div class="prose prose-slate prose-lg">
+                    <p>Traditional diagnostic tools (like HWiNFO or Task Manager) operate with implicit trust in the Windows Operating System. If a malicious seller alters the OS registry or utilizes a Virtual Machine (VM) to spoof hardware identifiers, standard tools will blindly output falsified data.</p>
+                    <p>The <strong>Hardware Ledger</strong> operates on a Zero-Trust methodology:</p>
+                    <ul class="list-disc pl-5 space-y-2 mt-4 text-slate-600">
+                        <li><strong>Kernel Bypass:</strong> We directly query the WMI root namespace and raw Windows Hardware Error Architecture (WHEA) logs, ignoring the OS presentation layer.</li>
+                        <li><strong>Air-Gapped Cryptography:</strong> The extracted telemetry is minified, hashed via SHA-256, compressed using Zlib, and encoded into a URL-Safe Base64 QR code.</li>
+                        <li><strong>Client-Side Verification:</strong> This web platform uses the native Web Crypto API to hash the payload locally. If the hashes mismatch, the payload has been tampered with.</li>
+                    </ul>
+                </div>
             </div>
-        </div>
+        </section>
 
-        <div id="privacy-view" class="page-view bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-            <h2 class="text-2xl font-bold mb-4">Privacy Policy</h2>
-            <p class="text-slate-600"><strong>We collect nothing.</strong> The Hardware Ledger processes all cryptographic hashes entirely offline within your local web browser. No telemetry, hardware IDs, or personal data are ever transmitted to any external server. This platform is completely serverless.</p>
-        </div>
+        <section id="guide-view" class="page-view max-w-4xl mx-auto">
+            <div class="bg-white p-10 rounded-3xl shadow-sm border border-slate-100 border-t-4 border-t-blue-500">
+                <h2 class="text-3xl font-extrabold mb-8 text-slate-900 flex items-center">
+                    <i class="fa-solid fa-clipboard-check text-blue-500 mr-4"></i> Physical Inspection Guide
+                </h2>
+                <div class="space-y-6">
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
+                        <h4 class="font-bold text-lg text-slate-900 mb-2">1. The 15-Minute Stress Test</h4>
+                        <p class="text-slate-600">Never hand over cash immediately. Open 30 browser tabs and a 4K YouTube video. Let it run for 15 minutes. If the system crashes, shuts down abruptly, or the fans emit a grinding noise, walk away.</p>
+                    </div>
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
+                        <h4 class="font-bold text-lg text-slate-900 mb-2">2. The Olfactory (Smell) Test</h4>
+                        <p class="text-slate-600">Physically smell the exhaust vents of the laptop or desktop. A sharp, ozone-like, or burnt metallic odor is a leading indicator of blown capacitors on the motherboard.</p>
+                    </div>
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
+                        <h4 class="font-bold text-lg text-slate-900 mb-2">3. I/O Port Integrity</h4>
+                        <p class="text-slate-600">Utilize a phone flashlight to inspect the USB and HDMI ports. Bent or mangled pins can permanently short-circuit the motherboard if a peripheral is inserted.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact-view" class="page-view text-center py-16">
+            <div class="inline-block bg-white p-12 rounded-3xl shadow-sm border border-slate-100">
+                <div class="w-24 h-24 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
+                    <i class="fa-solid fa-code"></i>
+                </div>
+                <h2 class="text-3xl font-extrabold mb-2 text-slate-900">Rathnayake R.M.S.D.</h2>
+                <p class="text-slate-500 font-medium text-lg mb-8">Information Systems Engineer & Developer</p>
+                <div class="flex justify-center space-x-8">
+                    <a href="#" class="text-slate-400 hover:text-slate-900 text-3xl transition transform hover:scale-110" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+                    <a href="#" class="text-slate-400 hover:text-blue-600 text-3xl transition transform hover:scale-110" aria-label="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+                    <a href="#" class="text-slate-400 hover:text-red-500 text-3xl transition transform hover:scale-110" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
+                </div>
+            </div>
+        </section>
+
+        <section id="privacy-view" class="page-view max-w-3xl mx-auto text-center py-12">
+            <i class="fa-solid fa-user-shield text-5xl text-slate-300 mb-6"></i>
+            <h2 class="text-3xl font-bold mb-6 text-slate-900">Absolute Privacy</h2>
+            <p class="text-slate-600 text-lg leading-relaxed bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+                <strong>We collect absolutely nothing.</strong> The Hardware Ledger processes all cryptographic hashes entirely offline within your local web browser's memory. No hardware IDs, telemetry data, or personal identifiable information (PII) are ever transmitted to any external server. This platform is 100% serverless.
+            </p>
+        </section>
 
     </main>
 
     <footer class="bg-white border-t border-slate-200 mt-auto">
-        <div class="max-w-5xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center text-sm text-slate-500">
-            <p>&copy; 2026 HWLedger Zero-Trust Systems.</p>
-            <div class="flex space-x-4 mt-4 md:mt-0">
-                <button onclick="navigateTo('guide')" class="hover:text-slate-900 transition">Buyer's Guide</button>
-                <button onclick="navigateTo('privacy')" class="hover:text-slate-900 transition">Privacy Policy</button>
+        <div class="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row justify-between items-center text-sm text-slate-500">
+            <p class="font-medium">&copy; 2026 HWLedger Zero-Trust Systems.</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <button onclick="navigateTo('guide')" class="hover:text-blue-600 font-medium transition">Buyer's Guide</button>
+                <button onclick="navigateTo('privacy')" class="hover:text-blue-600 font-medium transition">Privacy Policy</button>
             </div>
         </div>
     </footer>
 
     <script>
         // --- 1. SPA ROUTING LOGIC ---
-        // Theory: Hides all sections, removes 'active' class, then reveals target section.
         function navigateTo(pageId) {
-            document.querySelectorAll('.page-view').forEach(el => {
-                el.classList.remove('active');
-            });
+            document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
             document.getElementById(pageId + '-view').classList.add('active');
-            window.scrollTo(0, 0); // Scroll to top on page change
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // --- 2. TABBED UI LOGIC (Dashboard) ---
         function switchDashboardTab(tab) {
             const btnNormie = document.getElementById('tab-normie');
             const btnExpert = document.getElementById('tab-expert');
@@ -200,22 +259,19 @@
             const contentExpert = document.getElementById('content-expert');
 
             if (tab === 'normie') {
-                // Style Active Button
-                btnNormie.className = "px-6 py-2 rounded-full font-semibold text-sm bg-white shadow text-slate-900 transition";
-                btnExpert.className = "px-6 py-2 rounded-full font-semibold text-sm text-slate-500 hover:text-slate-900 transition";
-                // Show Content
+                btnNormie.className = "px-8 py-2.5 rounded-full font-bold text-sm bg-white shadow-sm text-slate-900 transition";
+                btnExpert.className = "px-8 py-2.5 rounded-full font-bold text-sm text-slate-500 hover:text-slate-900 transition";
                 contentNormie.style.display = 'block';
                 contentExpert.style.display = 'none';
             } else {
-                btnExpert.className = "px-6 py-2 rounded-full font-semibold text-sm bg-white shadow text-slate-900 transition";
-                btnNormie.className = "px-6 py-2 rounded-full font-semibold text-sm text-slate-500 hover:text-slate-900 transition";
+                btnExpert.className = "px-8 py-2.5 rounded-full font-bold text-sm bg-white shadow-sm text-slate-900 transition";
+                btnNormie.className = "px-8 py-2.5 rounded-full font-bold text-sm text-slate-500 hover:text-slate-900 transition";
                 contentExpert.style.display = 'block';
                 contentNormie.style.display = 'none';
             }
         }
 
-        // --- 3. CRYPTOGRAPHIC ENGINE (Web Crypto API) ---
-        // Theory: Browsers have native, lightning-fast C++ cryptographic engines built-in.
+        // --- 2. CRYPTOGRAPHIC ENGINE ---
         async function sha256(message) {
             const msgBuffer = new TextEncoder().encode(message);
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -227,101 +283,85 @@
             const urlParams = new URLSearchParams(window.location.search);
             let encodedData = urlParams.get('d');
             
-            // If no data in URL, stay on Home Page.
             if (!encodedData) {
                 navigateTo('home');
                 return;
             }
 
-            // If data exists, switch to Loading screen and process
             navigateTo('loading');
 
             try {
-                // Clean URL-Safe Base64
                 encodedData = encodedData.replace(/-/g, '+').replace(/_/g, '/');
-                
-                // Decode outer Base64 and Decompress Zlib (using Pako.js)
                 const compressedBytes = Uint8Array.from(atob(encodedData), c => c.charCodeAt(0));
                 const jsonString = new TextDecoder().decode(pako.inflate(compressedBytes));
                 
-                // Parse outer package
                 const packageObj = JSON.parse(jsonString);
-                const payloadB64 = packageObj.p; // The inner Base64 armored string
+                const payloadB64 = packageObj.p;
                 const providedSignature = packageObj.s;
 
-                // Hash the armored string to verify integrity
                 const calculatedSignature = await sha256(payloadB64);
                 
                 if (calculatedSignature !== providedSignature) {
-                    throw new Error("TAMPER DETECTED: Hardware signature invalid or altered.");
+                    throw new Error("Hardware signature mismatch. Payload has been tampered with.");
                 }
 
-                // If safe, decode the inner armor
                 const rawJsonStr = decodeURIComponent(escape(atob(payloadB64)));
                 const payload = JSON.parse(rawJsonStr);
                 
-                // Render UI
                 renderDashboard(payload);
+                renderExpertGrid(payload); // Inject dynamic tables
                 navigateTo('dashboard');
 
             } catch (error) {
-                document.getElementById('loading-error').classList.remove('hidden');
-                document.getElementById('loading-error').innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2"></i>${error.message}`;
+                document.getElementById('loading-error-container').classList.remove('hidden');
+                document.getElementById('loading-error-text').innerText = error.message; // Safe Injection
                 console.error(error);
             }
         }
 
-        // --- 4. TRUST ALGORITHM & UI POPULATOR ---
+        // --- 3. TRUST ALGORITHM & NORMIE UI ---
         function renderDashboard(data) {
-            // Extract Metrics safely
             const abuse = data.ab || {};
-            const pwr = abuse.Critical_Power_Failures || 0;
-            const unexpected = abuse.Unexpected_Shutdowns || 0;
             const thermal = abuse.Historical_Thermal_Throttling || 0;
             const whea = abuse.Fatal_Hardware_Errors || 0;
             const badBlocks = abuse.Disk_Bad_Blocks_Logged || 0;
-            const totalCrashes = pwr + unexpected;
+            const totalCrashes = (abuse.Critical_Power_Failures || 0) + (abuse.Unexpected_Shutdowns || 0);
 
             const cpu = data.cpu || {};
-            const cpuName = cpu.Name || "Unknown CPU";
             const vmSpoof = cpu.VM_Spoof_Detected?.includes("CRITICAL");
             
-            let gpuName = "Unknown GPU";
-            if (data.gpu && data.gpu.length > 0) gpuName = data.gpu[0].Model;
-            
-            const ram = data.ram_u?.Total_Installed || "Unknown RAM";
-            const mobo = data.mb?.Product_Model || "Unknown Board";
-
-            // Trust Math
             let score = 100;
             let isCritical = false;
             let criticalMsg = "";
 
-            if (thermal > 0) { score = 0; isCritical = true; criticalMsg = `Cooling System Failed (${thermal} logged events).`; }
+            if (thermal > 0) { score = 0; isCritical = true; criticalMsg = `Cooling System Failure: ${thermal} logged events.`; }
             if (whea > 0) { score = 0; isCritical = true; criticalMsg = "Fatal Silicon Architecture Errors (WHEA) detected."; }
-            if (vmSpoof) { score = 0; isCritical = true; criticalMsg = "VM SPOOF DETECTED. The seller is faking the hardware."; }
-            if (badBlocks > 0) { isCritical = true; criticalMsg = `${badBlocks} Bad Disk Blocks. The hard drive is dying.`; }
+            if (vmSpoof) { score = 0; isCritical = true; criticalMsg = "VM SPOOF DETECTED: Hardware identifiers are falsified."; }
+            if (badBlocks > 0) { isCritical = true; criticalMsg = `Storage Degradation: ${badBlocks} Bad Disk Blocks. Drive failing.`; }
 
             score -= (badBlocks * 15);
             score -= (totalCrashes * 0.5);
-            score = Math.max(0, Math.min(100, Math.floor(score))); // Clamp between 0-100
+            score = Math.max(0, Math.min(100, Math.floor(score)));
 
-            // Apply to UI (Normie View)
             const elScore = document.getElementById('ui-score');
             const elAdvice = document.getElementById('ui-advice');
+            const headerBar = document.getElementById('score-header-bar');
+            
             elScore.innerText = score;
+            elScore.className = "text-9xl font-black mb-4 tracking-tighter"; 
 
-            // Tailwind Class updates for colors
-            elScore.className = "text-8xl font-black mb-2"; // reset
             if (score >= 90) {
                 elScore.classList.add('text-appleGreen');
-                elAdvice.innerText = "Excellent Condition. Safe to buy.";
+                headerBar.className = "absolute top-0 left-0 w-full h-2 bg-appleGreen";
+                elAdvice.innerText = "Condition Excellent. Safe to purchase.";
             } else if (score >= 70) {
                 elScore.classList.add('text-appleOrange');
-                elAdvice.innerText = "Moderate Wear. Inspect carefully.";
+                headerBar.className = "absolute top-0 left-0 w-full h-2 bg-appleOrange";
+                elAdvice.innerText = "Moderate Wear. Verify physical condition.";
             } else {
                 elScore.classList.add('text-appleRed');
-                elAdvice.innerText = "CRITICAL DANGER. Do not buy.";
+                headerBar.className = "absolute top-0 left-0 w-full h-2 bg-appleRed";
+                elAdvice.innerText = "CRITICAL DANGER. Do not purchase.";
             }
 
             if (isCritical) {
@@ -330,20 +370,95 @@
             }
 
             // Populate Specs
-            document.getElementById('ui-cpu').innerText = cpuName;
-            document.getElementById('ui-gpu').innerText = gpuName;
-            document.getElementById('ui-ram').innerText = ram;
-            document.getElementById('ui-board').innerText = mobo;
+            document.getElementById('ui-cpu').innerText = cpu.Name || "Unknown CPU";
+            document.getElementById('ui-gpu').innerText = (data.gpu && data.gpu.length > 0) ? data.gpu[0].Model : "Unknown GPU";
+            document.getElementById('ui-ram').innerText = data.ram_u?.Total_Installed || "Unknown RAM";
+            document.getElementById('ui-board').innerText = data.mb?.Product_Model || "Unknown Board";
             
+            // Storage Placeholder Check
+            let storageStr = "Awaiting Backend Fix";
+            if (data.strg_d && data.strg_d.length > 0) storageStr = data.strg_d[0].Model || "Storage Found";
+            else if (data.strg_b && data.strg_b.length > 0) storageStr = data.strg_b[0].Model || "Storage Found";
+            document.getElementById('ui-storage').innerText = storageStr;
+
             document.getElementById('ui-crashes').innerText = totalCrashes;
             document.getElementById('ui-blocks').innerText = badBlocks;
             document.getElementById('ui-thermal').innerText = thermal;
-
-            // Populate Expert View (Pretty-print JSON)
-            document.getElementById('ui-raw-json').innerText = JSON.stringify(data, null, 2);
         }
 
-        // Run the engine as soon as the page loads
+        // --- 4. ADVANCED FORENSICS ENGINE (Expert View) ---
+        // Theory: Converts JSON objects/arrays into styled HTML definition lists automatically.
+        function renderExpertGrid(data) {
+            const container = document.getElementById('expert-data-grid');
+            container.innerHTML = ''; // Clear existing
+
+            // Mapping JSON keys to human-readable category titles
+            const categories = {
+                "sys": "System Environment", "mb": "Motherboard BIOS", "cpu": "Processor Details",
+                "gpu": "Graphics Rendering", "disp": "Display EDID", "ram_p": "Physical Memory Topology",
+                "strg_b": "Basic Storage", "strg_d": "Deep S.M.A.R.T. Storage", "net": "Network Adapters", "ab": "Abuse History Logs"
+            };
+
+            for (const [key, title] of Object.entries(categories)) {
+                if (!data[key]) continue; // Skip nulls (like your missing storage)
+                
+                const section = document.createElement('div');
+                section.className = "mb-6 border border-slate-200 rounded-xl overflow-hidden";
+                
+                // Section Header
+                const header = document.createElement('div');
+                header.className = "bg-slate-50 px-6 py-3 border-b border-slate-200 font-bold text-slate-700 text-sm tracking-wide uppercase";
+                header.innerText = title;
+                section.appendChild(header);
+
+                const tableContainer = document.createElement('div');
+                tableContainer.className = "expert-table-container overflow-x-auto bg-white";
+
+                // If array of objects (like RAM sticks or multiple GPUs)
+                if (Array.isArray(data[key])) {
+                    data[key].forEach((item, index) => {
+                        tableContainer.appendChild(createDataGrid(item, data[key].length > 1 ? `#${index + 1}` : null));
+                    });
+                } 
+                // If single object (like CPU or Abuse History)
+                else {
+                    tableContainer.appendChild(createDataGrid(data[key], null));
+                }
+
+                section.appendChild(tableContainer);
+                container.appendChild(section);
+            }
+        }
+
+        // Helper to build the individual rows
+        function createDataGrid(obj, subtitle) {
+            const wrapper = document.createElement('div');
+            wrapper.className = "px-6 py-4";
+            if (subtitle) {
+                const sub = document.createElement('p');
+                sub.className = "text-xs font-bold text-blue-500 mb-3 uppercase";
+                sub.innerText = `Device ${subtitle}`;
+                wrapper.appendChild(sub);
+            }
+            
+            const grid = document.createElement('dl');
+            grid.className = "grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4";
+            
+            for (const [k, v] of Object.entries(obj)) {
+                if (typeof v === 'object' && v !== null) continue; // Skip deeply nested objects for simple UI
+                const div = document.createElement('div');
+                div.className = "flex flex-col border-b border-slate-100 pb-2";
+                div.innerHTML = `
+                    <dt class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">${k.replace(/_/g, ' ')}</dt>
+                    <dd class="text-sm font-medium text-slate-800 break-words">${v}</dd>
+                `;
+                grid.appendChild(div);
+            }
+            wrapper.appendChild(grid);
+            return wrapper;
+        }
+
+        // Boot
         window.onload = initZeroTrustEngine;
     </script>
 </body>
