@@ -124,6 +124,14 @@
                     <p class="text-slate-400 font-bold uppercase tracking-widest text-xs mb-4 mt-2">Zero-Trust Trust Score</p>
                     <h1 id="ui-score" class="text-9xl font-black text-appleGreen mb-4 tracking-tighter">--</h1>
                     <p id="ui-advice" class="text-2xl font-semibold text-slate-600">Awaiting Telemetry</p>
+                    
+                    <div class="mt-6 inline-flex items-center bg-slate-50 border border-slate-200 rounded-full px-4 py-1.5 shadow-inner hidden" id="ui-timestamp-container">
+                        <span class="relative flex h-2.5 w-2.5 mr-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                        </span>
+                        <span class="text-xs font-bold text-slate-600 tracking-wide" id="ui-timestamp">--</span>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -137,6 +145,7 @@
                             <li class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Memory (RAM)</span> <span id="ui-ram" class="font-medium text-slate-800"></span></li>
                             <li class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Motherboard</span> <span id="ui-board" class="font-medium text-slate-800"></span></li>
                             <li class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Primary Storage</span> <span id="ui-storage" class="font-medium text-slate-800"></span></li>
+                            <li class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Battery Health</span> <span id="ui-battery" class="font-medium text-slate-800"></span></li>
                         </ul>
                     </article>
                     
@@ -339,7 +348,7 @@
             if (vmSpoof) { score = 0; isCritical = true; criticalMsg = "VM SPOOF DETECTED: Hardware identifiers are falsified."; }
             if (badBlocks > 0) { isCritical = true; criticalMsg = `Storage Degradation: ${badBlocks} Bad Disk Blocks. Drive failing.`; }
 
-            score -= (badBlocks * 15);
+            score -= (badBlocks * 0.5);
             score -= (totalCrashes * 0.5);
             score = Math.max(0, Math.min(100, Math.floor(score)));
 
@@ -350,11 +359,11 @@
             elScore.innerText = score;
             elScore.className = "text-9xl font-black mb-4 tracking-tighter"; 
 
-            if (score >= 90) {
+            if (score >= 80) {
                 elScore.classList.add('text-appleGreen');
                 headerBar.className = "absolute top-0 left-0 w-full h-2 bg-appleGreen";
                 elAdvice.innerText = "Condition Excellent. Safe to purchase.";
-            } else if (score >= 70) {
+            } else if (score >= 50) {
                 elScore.classList.add('text-appleOrange');
                 headerBar.className = "absolute top-0 left-0 w-full h-2 bg-appleOrange";
                 elAdvice.innerText = "Moderate Wear. Verify physical condition.";
@@ -375,12 +384,32 @@
             document.getElementById('ui-ram').innerText = data.ram_u?.Total_Installed || "Unknown RAM";
             document.getElementById('ui-board').innerText = data.mb?.Product_Model || "Unknown Board";
             
-            // Storage Placeholder Check
-            let storageStr = "Awaiting Backend Fix";
-            if (data.strg_d && data.strg_d.length > 0) storageStr = data.strg_d[0].Model || "Storage Found";
-            else if (data.strg_b && data.strg_b.length > 0) storageStr = data.strg_b[0].Model || "Storage Found";
+            // Anti-Spoof Timestamp Logic
+            if (data.ts) {
+                document.getElementById('ui-timestamp-container').classList.remove('hidden');
+                document.getElementById('ui-timestamp').innerText = `Scan Generated: ${data.ts}`;
+            }
+
+            // Battery Logic
+            const bat = data.bat || {};
+            let batStr = "Desktop PC (No Battery)";
+            if (bat.Status && !bat.Status.includes("No Battery Detected")) {
+                batStr = `${bat.Battery_Health_Percentage || "Unknown"} Health (${bat.Wear_Level || "0%"} Wear)`;
+            }
+            document.getElementById('ui-battery').innerText = batStr;
+
+            // Smart Storage Fallback Logic
+            let storageStr = "Unknown Storage";
+            if (data.strg_d && data.strg_d.length > 0 && data.strg_d[0].Model) {
+                storageStr = data.strg_d[0].Model;
+            } else if (data.strg_b && data.strg_b.length > 0 && data.strg_b[0].Model) {
+                storageStr = data.strg_b[0].Model;
+            } else if (data.strg_d && data.strg_d.length > 0 && data.strg_d[0].Error) {
+                storageStr = "Access Blocked (Run Scanner as Admin)";
+            }
             document.getElementById('ui-storage').innerText = storageStr;
 
+            // Populate Stability Specs
             document.getElementById('ui-crashes').innerText = totalCrashes;
             document.getElementById('ui-blocks').innerText = badBlocks;
             document.getElementById('ui-thermal').innerText = thermal;
