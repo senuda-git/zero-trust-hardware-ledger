@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+dist/
+build/
+*.egg-info/
+
+# Generated output
+hardware_report.txt
+Hardware-Ledger-QR.png
+Hardware-Ledger-Error.txt
+Hardware-Ledger-Crash.txt
+
+# Android
+local.properties
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
