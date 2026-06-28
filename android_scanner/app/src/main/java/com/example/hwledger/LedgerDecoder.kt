@@ -8,7 +8,6 @@ import org.json.JSONObject
 
 class LedgerDecoder {
 
-    // A data class to hold our final UI results
     data class VerificationResult(
         val isAuthentic: Boolean,
         val payload: JSONObject?,
@@ -17,16 +16,16 @@ class LedgerDecoder {
 
     fun unpackAndVerify(scannedUri: String): VerificationResult {
         try {
-            // 1. Strip the custom scheme to isolate the Base64 data
+            // 1. Strip the custom scheme
             if (!scannedUri.startsWith("hwledger://verify?data=")) {
                 return VerificationResult(false, null, "Invalid QR Format")
             }
-            val base64Data = scannedUri.substringAfter("data=")
+            val base64Data = scannedUri.substringAfter("data=").trim()
 
-            // 2. Base64 Decode
-            val compressedBytes = Base64.decode(base64Data, Base64.DEFAULT)
+            // 2. Base64 Decode outer shell
+            val compressedBytes = Base64.decode(base64Data, Base64.URL_SAFE or Base64.NO_WRAP)
 
-            // 3. Zlib Decompression (The reverse of Python's zlib.compress)
+            // 3. Zlib Decompression
             val inflater = Inflater()
             inflater.setInput(compressedBytes)
             val outputStream = ByteArrayOutputStream()
@@ -38,22 +37,27 @@ class LedgerDecoder {
             inflater.end()
             val jsonString = outputStream.toString("UTF-8")
 
-            // 4. Parse the JSON Package
+            // 4. Parse the Outer Package
             val packageJson = JSONObject(jsonString)
-            val payloadObj = packageJson.getJSONObject("p")
+
+            // We extract the pure Base64 text and signature
+            val payloadB64 = packageJson.getString("p")
             val providedSignature = packageJson.getString("s")
 
-            // 5. The Zero-Trust Verification (Re-hash the payload)
-            // We must minify the JSON exactly like Python did: separators=(',', ':')
-            val minifiedPayloadString = payloadObj.toString()
-
+            // 5. The Zero-Trust Verification (Hash the pure text)
             val digest = MessageDigest.getInstance("SHA-256")
-            val hashBytes = digest.digest(minifiedPayloadString.toByteArray(Charsets.UTF_8))
+            val hashBytes = digest.digest(payloadB64.toByteArray(Charsets.UTF_8))
             val calculatedSignature = hashBytes.joinToString("") { "%02x".format(it) }
 
             // 6. The Final Check
             return if (calculatedSignature == providedSignature) {
-                VerificationResult(true, payloadObj) // Authentic!
+
+                // Decode the inner Base64 armor back into the JSON Object for the UI
+                val decodedPayloadBytes = Base64.decode(payloadB64, Base64.DEFAULT)
+                val decodedJsonString = String(decodedPayloadBytes, Charsets.UTF_8)
+                val payloadObj = JSONObject(decodedJsonString)
+
+                VerificationResult(true, payloadObj)
             } else {
                 VerificationResult(false, null, "TAMPER DETECTED: Hashes do not match.")
             }

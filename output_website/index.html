@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Zero-Trust Hardware Ledger - Verify second-hand PC hardware with kernel-level telemetry.">
+    <title>Zero-Trust Hardware Ledger</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        appleGreen: '#34C759',
+                        appleOrange: '#FF9F0A',
+                        appleRed: '#FF3B30',
+                        appleBg: '#F5F5F7'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .page-view { display: none; animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .page-view.active { display: block; }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(8px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        /* Custom scrollbar for the expert tables */
+        .expert-table-container::-webkit-scrollbar { height: 8px; }
+        .expert-table-container::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+
+<body class="bg-appleBg text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <button class="flex items-center hover:opacity-80 transition" onclick="navigateTo('home')" aria-label="Home">
+                    <i class="fa-solid fa-shield-halved text-blue-600 text-2xl mr-2"></i>
+                    <span class="font-bold text-xl tracking-tight text-slate-900">HWLedger</span>
+                </button>
+                
+                <div class="hidden sm:flex sm:items-center sm:space-x-6 font-medium text-slate-500">
+                    <button onclick="navigateTo('home')" class="hover:text-blue-600 transition">Home</button>
+                    <button onclick="navigateTo('architecture')" class="hover:text-blue-600 transition">Architecture</button>
+                    <button onclick="navigateTo('contact')" class="hover:text-blue-600 transition">Developer</button>
+                    <a href="https://github.com/senuda-git/zero-trust-hardware-ledger/releases/latest" target="_blank" rel="noopener noreferrer" class="ml-4 px-6 py-2 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition shadow-sm text-sm">
+                        Download Scanner
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-6xl mx-auto px-4 py-8 w-full">
+
+        <section id="home-view" class="page-view active text-center py-12 lg:py-20">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 tracking-tight mb-6">
+                Don't Get Scammed.<br><span class="text-blue-600">Verify Before You Buy.</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto mb-10">
+                The world's first Zero-Trust diagnostic ledger. We bypass spoofed operating systems using kernel-level telemetry to verify second-hand PC hardware.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto mt-16 text-left">
+                <article class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+                    <i class="fa-solid fa-microchip text-blue-500 text-4xl mb-6"></i>
+                    <h3 class="font-bold text-xl mb-3">Kernel-Level Truth</h3>
+                    <p class="text-slate-500 leading-relaxed">We query raw Silicon architecture and Windows WHEA error logs, ignoring spoofed System info.</p>
+                </article>
+                <article class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+                    <i class="fa-solid fa-link-slash text-appleOrange text-4xl mb-6"></i>
+                    <h3 class="font-bold text-xl mb-3">100% Offline</h3>
+                    <p class="text-slate-500 leading-relaxed">Data is securely transmitted via QR code. No Wi-Fi required, protecting you in public meetups.</p>
+                </article>
+                <article class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition">
+                    <i class="fa-solid fa-lock text-appleGreen text-4xl mb-6"></i>
+                    <h3 class="font-bold text-xl mb-3">Cryptographic Seal</h3>
+                    <p class="text-slate-500 leading-relaxed">Every payload is sealed with a SHA-256 cryptographic hash. If a seller alters a single byte, the hash breaks.</p>
+                </article>
+            </div>
+        </section>
+
+        <section id="loading-view" class="page-view text-center py-24">
+            <i class="fa-solid fa-circle-notch fa-spin text-blue-600 text-6xl mb-6"></i>
+            <h2 class="text-2xl font-bold text-slate-800">Decrypting Payload...</h2>
+            
+            <div id="loading-error-container" class="hidden mt-6 inline-flex items-center bg-red-50 text-appleRed px-4 py-3 rounded-lg">
+                <i class="fa-solid fa-triangle-exclamation mr-3 text-xl"></i>
+                <span id="loading-error-text" class="font-semibold text-left"></span>
+            </div>
+        </section>
+
+        <section id="dashboard-view" class="page-view">
+            
+            <div class="flex justify-center mb-10">
+                <div class="bg-slate-200 p-1 rounded-full flex space-x-1 shadow-inner">
+                    <button id="tab-normie" onclick="switchDashboardTab('normie')" class="px-8 py-2.5 rounded-full font-bold text-sm bg-white shadow-sm text-slate-900 transition">Executive Summary</button>
+                    <button id="tab-expert" onclick="switchDashboardTab('expert')" class="px-8 py-2.5 rounded-full font-bold text-sm text-slate-500 hover:text-slate-900 transition">Advanced Forensics</button>
+                </div>
+            </div>
+
+            <div id="ui-warning-banner" class="hidden bg-red-50 border-l-4 border-appleRed rounded-r-2xl p-6 mb-8 shadow-sm">
+                <div class="flex items-start">
+                    <i class="fa-solid fa-triangle-exclamation text-appleRed text-3xl mr-4 mt-1"></i>
+                    <div>
+                        <h3 class="font-black text-appleRed text-lg uppercase tracking-wide">Critical Hardware Warning</h3>
+                        <p id="ui-warning-text" class="text-red-800 font-medium mt-1"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-normie" class="space-y-6">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-10 text-center relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-slate-100" id="score-header-bar"></div>
+                    <p class="text-slate-400 font-bold uppercase tracking-widest text-xs mb-4 mt-2">Zero-Trust Trust Score</p>
+                    <h1 id="ui-score" class="text-9xl font-black text-appleGreen mb-4 tracking-tighter">--</h1>
+                    <p id="ui-advice" class="text-2xl font-semibold text-slate-600">Awaiting Telemetry</p>
+                    
+                    <div class="mt-6 inline-flex items-center bg-slate-50 border border-slate-200 rounded-full px-4 py-1.5 shadow-inner hidden" id="ui-timestamp-container">
+                        <span class="relative flex h-2.5 w-2.5 mr-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                        </span>
+                        <span class="text-xs font-bold text-slate-600 tracking-wide" id="ui-timestamp">--</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <article class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-slate-900 text-lg mb-5 flex items-center border-b pb-3">
+                            <i class="fa-solid fa-server text-blue-500 mr-3"></i> Hardware Manifest
+                        </h3>
+                        <ul class="space-y-4">
+                            <li class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Processor (CPU)</span> <span id="ui-cpu" class="font-medium text-slate-800"></span></li>
+                            <li class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Graphics (GPU)</span> <span id="ui-gpu" class="font-medium text-slate-800"></span></li>
+                            <li class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Memory (RAM)</span> <span id="ui-ram" class="font-medium text-slate-800"></span></li>
+                            <li class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Motherboard</span> <span id="ui-board" class="font-medium text-slate-800"></span></li>
+                            <li class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Primary Storage</span> <span id="ui-storage" class="font-medium text-slate-800"></span></li>
+                            <li class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Battery Health</span> <span id="ui-battery" class="font-medium text-slate-800"></span></li>
+                        </ul>
+                    </article>
+                    
+                    <article class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-slate-900 text-lg mb-5 flex items-center border-b pb-3">
+                            <i class="fa-solid fa-heart-pulse text-appleRed mr-3"></i> Forensic Stability
+                        </h3>
+                        <ul class="space-y-5">
+                            <li class="flex justify-between items-center">
+                                <span class="font-medium text-slate-600">Total Crashes / Power Fails</span> 
+                                <span id="ui-crashes" class="bg-slate-100 text-slate-800 py-1 px-3 rounded-lg font-bold"></span>
+                            </li>
+                            <li class="flex justify-between items-center">
+                                <span class="font-medium text-slate-600">Bad Disk Blocks (S.M.A.R.T)</span> 
+                                <span id="ui-blocks" class="bg-slate-100 text-slate-800 py-1 px-3 rounded-lg font-bold"></span>
+                            </li>
+                            <li class="flex justify-between items-center">
+                                <span class="font-medium text-slate-600">Thermal Throttling Events</span> 
+                                <span id="ui-thermal" class="bg-slate-100 text-slate-800 py-1 px-3 rounded-lg font-bold"></span>
+                            </li>
+                        </ul>
+                    </article>
+                </div>
+            </div>
+
+            <div id="content-expert" class="hidden space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                    <h3 class="font-bold text-slate-900 text-xl mb-2">Raw Telemetry Ledger</h3>
+                    <p class="text-slate-500 text-sm mb-6">Direct extraction from Windows Management Instrumentation (WMI) and ACPI tables.</p>
+                    
+                    <div id="expert-data-grid" class="space-y-8"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="architecture-view" class="page-view max-w-4xl mx-auto">
+            <div class="bg-white p-10 rounded-3xl shadow-sm border border-slate-100">
+                <h2 class="text-3xl font-extrabold mb-6 text-slate-900">Zero-Trust Architecture</h2>
+                <div class="prose prose-slate prose-lg">
+                    <p>Traditional diagnostic tools (like HWiNFO or Task Manager) operate with implicit trust in the Windows Operating System. If a malicious seller alters the OS registry or utilizes a Virtual Machine (VM) to spoof hardware identifiers, standard tools will blindly output falsified data.</p>
+                    <p>The <strong>Hardware Ledger</strong> operates on a Zero-Trust methodology:</p>
+                    <ul class="list-disc pl-5 space-y-2 mt-4 text-slate-600">
+                        <li><strong>Kernel Bypass:</strong> We directly query the WMI root namespace and raw Windows Hardware Error Architecture (WHEA) logs, ignoring the OS presentation layer.</li>
+                        <li><strong>Air-Gapped Cryptography:</strong> The extracted telemetry is minified, hashed via SHA-256, compressed using Zlib, and encoded into a URL-Safe Base64 QR code.</li>
+                        <li><strong>Client-Side Verification:</strong> This web platform uses the native Web Crypto API to hash the payload locally. If the hashes mismatch, the payload has been tampered with.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="guide-view" class="page-view max-w-4xl mx-auto">
+            <div class="bg-white p-10 rounded-3xl shadow-sm border border-slate-100 border-t-4 border-t-blue-500">
+                <h2 class="text-3xl font-extrabold mb-8 text-slate-900 flex items-center">
+                    <i class="fa-solid fa-clipboard-check text-blue-500 mr-4"></i> Physical Inspection Guide
+                </h2>
+                <div class="space-y-6">
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
+                        <h4 class="font-bold text-lg text-slate-900 mb-2">1. The 15-Minute Stress Test</h4>
+                        <p class="text-slate-600">Never hand over cash immediately. Open 30 browser tabs and a 4K YouTube video. Let it run for 15 minutes. If the system crashes, shuts down abruptly, or the fans emit a grinding noise, walk away.</p>
+                    </div>
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
+                        <h4 class="font-bold text-lg text-slate-900 mb-2">2. The Olfactory (Smell) Test</h4>
+                        <p class="text-slate-600">Physically smell the exhaust vents of the laptop or desktop. A sharp, ozone-like, or burnt metallic odor is a leading indicator of blown capacitors on the motherboard.</p>
+                    </div>
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
+                        <h4 class="font-bold text-lg text-slate-900 mb-2">3. I/O Port Integrity</h4>
+                        <p class="text-slate-600">Utilize a phone flashlight to inspect the USB and HDMI ports. Bent or mangled pins can permanently short-circuit the motherboard if a peripheral is inserted.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact-view" class="page-view text-center py-16">
+            <div class="inline-block bg-white p-12 rounded-3xl shadow-sm border border-slate-100">
+                <div class="w-24 h-24 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
+                    <i class="fa-solid fa-code"></i>
+                </div>
+                <h2 class="text-3xl font-extrabold mb-2 text-slate-900">Rathnayake R.M.S.D.</h2>
+                <p class="text-slate-500 font-medium text-lg mb-8">Information Systems Engineer & Developer</p>
+                <div class="flex justify-center space-x-8">
+                    <a href="#" class="text-slate-400 hover:text-slate-900 text-3xl transition transform hover:scale-110" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+                    <a href="#" class="text-slate-400 hover:text-blue-600 text-3xl transition transform hover:scale-110" aria-label="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+                    <a href="#" class="text-slate-400 hover:text-red-500 text-3xl transition transform hover:scale-110" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
+                </div>
+            </div>
+        </section>
+
+        <section id="privacy-view" class="page-view max-w-3xl mx-auto text-center py-12">
+            <i class="fa-solid fa-user-shield text-5xl text-slate-300 mb-6"></i>
+            <h2 class="text-3xl font-bold mb-6 text-slate-900">Absolute Privacy</h2>
+            <p class="text-slate-600 text-lg leading-relaxed bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+                <strong>We collect absolutely nothing.</strong> The Hardware Ledger processes all cryptographic hashes entirely offline within your local web browser's memory. No hardware IDs, telemetry data, or personal identifiable information (PII) are ever transmitted to any external server. This platform is 100% serverless.
+            </p>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 mt-auto">
+        <div class="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row justify-between items-center text-sm text-slate-500">
+            <p class="font-medium">&copy; 2026 HWLedger Zero-Trust Systems.</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <button onclick="navigateTo('guide')" class="hover:text-blue-600 font-medium transition">Buyer's Guide</button>
+                <button onclick="navigateTo('privacy')" class="hover:text-blue-600 font-medium transition">Privacy Policy</button>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. SPA ROUTING LOGIC ---
+        function navigateTo(pageId) {
+            document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
+            document.getElementById(pageId + '-view').classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function switchDashboardTab(tab) {
+            const btnNormie = document.getElementById('tab-normie');
+            const btnExpert = document.getElementById('tab-expert');
+            const contentNormie = document.getElementById('content-normie');
+            const contentExpert = document.getElementById('content-expert');
+
+            if (tab === 'normie') {
+                btnNormie.className = "px-8 py-2.5 rounded-full font-bold text-sm bg-white shadow-sm text-slate-900 transition";
+                btnExpert.className = "px-8 py-2.5 rounded-full font-bold text-sm text-slate-500 hover:text-slate-900 transition";
+                contentNormie.style.display = 'block';
+                contentExpert.style.display = 'none';
+            } else {
+                btnExpert.className = "px-8 py-2.5 rounded-full font-bold text-sm bg-white shadow-sm text-slate-900 transition";
+                btnNormie.className = "px-8 py-2.5 rounded-full font-bold text-sm text-slate-500 hover:text-slate-900 transition";
+                contentExpert.style.display = 'block';
+                contentNormie.style.display = 'none';
+            }
+        }
+
+        // --- 2. CRYPTOGRAPHIC ENGINE ---
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function initZeroTrustEngine() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let encodedData = urlParams.get('d');
+            
+            if (!encodedData) {
+                navigateTo('home');
+                return;
+            }
+
+            navigateTo('loading');
+
+            try {
+                // Decode URL-safe Base64 → Zlib inflate → JSON parse outer package
+                encodedData = encodedData.replace(/-/g, '+').replace(/_/g, '/');
+                const compressedBytes = Uint8Array.from(atob(encodedData), c => c.charCodeAt(0));
+                const jsonString = new TextDecoder().decode(pako.inflate(compressedBytes));
+                
+                const packageObj = JSON.parse(jsonString);
+                const payloadStr = packageObj.p;
+                const providedSignature = packageObj.s;
+
+                // Verify SHA-256 hash of the raw payload string
+                const calculatedSignature = await sha256(payloadStr);
+                
+                if (calculatedSignature !== providedSignature) {
+                    throw new Error("Hardware signature mismatch. Payload has been tampered with.");
+                }
+
+                // V2 payload: p is a raw JSON string (no inner Base64 layer)
+                const payload = JSON.parse(payloadStr);
+                
+                renderDashboard(payload);
+                renderExpertGrid(payload);
+                navigateTo('dashboard');
+
+            } catch (error) {
+                document.getElementById('loading-error-container').classList.remove('hidden');
+                document.getElementById('loading-error-text').innerText = error.message;
+                console.error(error);
+            }
+        }
+
+        // --- 3. TRUST ALGORITHM & NORMIE UI ---
+        // Compact key reference: ab=abuse, c=cpu, g=gpu, r=ram, b=board, st=storage, bt=battery
+        function renderDashboard(data) {
+            const abuse = data.ab || {};
+            const thermal = abuse.t || 0;
+            const whea = abuse.f || 0;
+            const badBlocks = abuse.d || 0;
+            const totalCrashes = (abuse.p || 0) + (abuse.u || 0) + (abuse.b || 0);
+
+            let score = 100;
+            let isCritical = false;
+            let criticalMsg = "";
+
+            // Instant-fail conditions
+            if (thermal > 0) { score = 0; isCritical = true; criticalMsg = `Cooling System Failure: ${thermal} thermal throttling events logged.`; }
+            if (whea > 0) { score = 0; isCritical = true; criticalMsg = "Fatal Silicon Architecture Errors (WHEA) detected."; }
+            if (badBlocks > 0) { isCritical = true; criticalMsg = `Storage Degradation: ${badBlocks} Bad Disk Blocks. Drive failing.`; }
+
+            // Graduated penalties
+            score -= (badBlocks * 0.5);
+            score -= (totalCrashes * 0.5);
+            score = Math.max(0, Math.min(100, Math.floor(score)));
+
+            const elScore = document.getElementById('ui-score');
+            const elAdvice = document.getElementById('ui-advice');
+            const headerBar = document.getElementById('score-header-bar');
+            
+            elScore.innerText = score;
+            elScore.className = "text-9xl font-black mb-4 tracking-tighter"; 
+
+            if (score >= 80) {
+                elScore.classList.add('text-appleGreen');
+                headerBar.className = "absolute top-0 left-0 w-full h-2 bg-appleGreen";
+                elAdvice.innerText = "Condition Excellent. Safe to purchase.";
+            } else if (score >= 50) {
+                elScore.classList.add('text-appleOrange');
+                headerBar.className = "absolute top-0 left-0 w-full h-2 bg-appleOrange";
+                elAdvice.innerText = "Moderate Wear. Verify physical condition.";
+            } else {
+                elScore.classList.add('text-appleRed');
+                headerBar.className = "absolute top-0 left-0 w-full h-2 bg-appleRed";
+                elAdvice.innerText = "CRITICAL DANGER. Do not purchase.";
+            }
+
+            if (isCritical) {
+                document.getElementById('ui-warning-banner').classList.remove('hidden');
+                document.getElementById('ui-warning-text').innerText = criticalMsg;
+            }
+
+            // Populate hardware specs
+            const cpu = data.c || {};
+            document.getElementById('ui-cpu').innerText = cpu.n ? `${cpu.n} (${cpu.cl} GHz)` : "Unknown CPU";
+            document.getElementById('ui-gpu').innerText = (data.g && data.g.length > 0) ? `${data.g[0].m} (${data.g[0].vr} GB)` : "Unknown GPU";
+            document.getElementById('ui-ram').innerText = data.r ? `${data.r.toFixed(2)} GB` : "Unknown RAM";
+            document.getElementById('ui-board').innerText = data.b ? `${data.b.mfg} ${data.b.m}` : "Unknown Board";
+            
+            // Timestamp
+            if (data.t) {
+                document.getElementById('ui-timestamp-container').classList.remove('hidden');
+                const scanDate = new Date(data.t * 1000);
+                document.getElementById('ui-timestamp').innerText = `Scan Generated: ${scanDate.toLocaleString()}`;
+            }
+
+            // Battery
+            const bat = data.bt || {};
+            let batStr = "Desktop PC";
+            if (bat.st === "N/A") { batStr = "Desktop PC (No Battery)"; }
+            else if (bat.h) {
+                batStr = `${bat.h.toFixed(2)}% Health (${(bat.w || 0).toFixed(2)}% Wear)`;
+            } else if (bat.st) {
+                batStr = bat.st;
+            }
+            document.getElementById('ui-battery').innerText = batStr;
+
+            // Storage
+            let storageStr = "Unknown Storage";
+            if (data.st && data.st.length > 0 && data.st[0].m) {
+                storageStr = data.st[0].m;
+            }
+            document.getElementById('ui-storage').innerText = storageStr;
+
+            // Stability counters
+            document.getElementById('ui-crashes').innerText = totalCrashes;
+            document.getElementById('ui-blocks').innerText = badBlocks;
+            document.getElementById('ui-thermal').innerText = thermal;
+        }
+
+        // --- 4. ADVANCED FORENSICS ENGINE (Expert View) ---
+        // Expands compact 1-2 char keys back to human-readable labels per category
+        const KEY_MAP = {
+            c:  { _title: "Processor Details",      n: "Name", co: "Cores", th: "Threads", cl: "Max Clock (GHz)" },
+            g:  { _title: "Graphics (GPU)",         m: "Model", vr: "VRAM (GB)" },
+            b:  { _title: "Motherboard",            mfg: "Manufacturer", m: "Product Model", s: "Serial Number" },
+            st: { _title: "Storage (S.M.A.R.T.)",   m: "Model", sz: "Size (GB)", h: "Health Status", w: "Wear Level (%)", nw: "Warning" },
+            bt: { _title: "Battery",                st: "Status", h: "Health (%)", w: "Wear Level (%)" },
+            n:  { _title: "Network Adapters",       ma: "MAC Address", sp: "MAC Spoofed" },
+            ab: { _title: "Abuse History",          p: "Critical Power Failures", u: "Unexpected Shutdowns", b: "Blue Screens of Death", d: "Bad Disk Blocks", t: "Thermal Throttling Events", f: "Fatal Hardware Errors" },
+            sy: { _title: "System Flags",           w: "Warning" },
+        };
+
+        // Ordered list of categories to render (controls display order)
+        const CATEGORY_ORDER = ["c", "g", "b", "st", "bt", "ab", "n", "sy"];
+
+        function renderExpertGrid(data) {
+            const container = document.getElementById('expert-data-grid');
+            container.innerHTML = '';
+
+            for (const key of CATEGORY_ORDER) {
+                if (!data[key]) continue;
+                const labels = KEY_MAP[key] || {};
+                
+                const section = document.createElement('div');
+                section.className = "mb-6 border border-slate-200 rounded-xl overflow-hidden";
+                
+                // Section header
+                const header = document.createElement('div');
+                header.className = "bg-slate-50 px-6 py-3 border-b border-slate-200 font-bold text-slate-700 text-sm tracking-wide uppercase";
+                header.innerText = labels._title || key;
+                section.appendChild(header);
+
+                const tableContainer = document.createElement('div');
+                tableContainer.className = "expert-table-container overflow-x-auto bg-white";
+
+                if (Array.isArray(data[key])) {
+                    data[key].forEach((item, index) => {
+                        tableContainer.appendChild(createDataGrid(item, data[key].length > 1 ? `#${index + 1}` : null, labels));
+                    });
+                } else if (typeof data[key] === 'object') {
+                    tableContainer.appendChild(createDataGrid(data[key], null, labels));
+                } else {
+                    // Simple value (e.g., RAM total is just a string)
+                    const wrapper = document.createElement('div');
+                    wrapper.className = "px-6 py-4";
+                    const p = document.createElement('p');
+                    p.className = "text-sm font-medium text-slate-800";
+                    p.textContent = data[key];
+                    wrapper.appendChild(p);
+                    tableContainer.appendChild(wrapper);
+                }
+
+                section.appendChild(tableContainer);
+                container.appendChild(section);
+            }
+
+            // RAM is a simple string value — render it as its own section
+            if (data.r) {
+                const section = document.createElement('div');
+                section.className = "mb-6 border border-slate-200 rounded-xl overflow-hidden";
+                const header = document.createElement('div');
+                header.className = "bg-slate-50 px-6 py-3 border-b border-slate-200 font-bold text-slate-700 text-sm tracking-wide uppercase";
+                header.innerText = "Memory (RAM)";
+                section.appendChild(header);
+                const wrapper = document.createElement('div');
+                wrapper.className = "px-6 py-4";
+                const p = document.createElement('p');
+                p.className = "text-sm font-medium text-slate-800";
+                p.textContent = `Total Installed: ${data.r.toFixed(2)} GB`;
+                wrapper.appendChild(p);
+                section.appendChild(wrapper);
+                container.appendChild(section);
+            }
+        }
+
+        // Builds individual rows for an object, using the labels map for readable names
+        function createDataGrid(obj, subtitle, labels) {
+            labels = labels || {};
+            const wrapper = document.createElement('div');
+            wrapper.className = "px-6 py-4";
+            if (subtitle) {
+                const sub = document.createElement('p');
+                sub.className = "text-xs font-bold text-blue-500 mb-3 uppercase";
+                sub.innerText = `Device ${subtitle}`;
+                wrapper.appendChild(sub);
+            }
+            
+            const grid = document.createElement('dl');
+            grid.className = "grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4";
+            
+            for (const [k, v] of Object.entries(obj)) {
+                if (k === '_title') continue;
+                if (typeof v === 'object' && v !== null) continue;
+                
+                let displayValue = v;
+                // --- Value Transformation Logic ---
+                if (k === 'h' && labels._title.includes('Storage')) {
+                    const healthMap = { 'H': 'Healthy', 'W': 'Warning', 'U': 'Unhealthy' };
+                    displayValue = healthMap[v] || 'Unknown';
+                } else if (k === 'sp') {
+                    displayValue = (v === 1) ? 'Yes (CRITICAL)' : 'No';
+                } else if (k === 'nw' && labels._title.includes('Storage')) {
+                    displayValue = (v === 'C') ? 'CRITICAL: Mechanical Drive' : v;
+                } else if (k === 'w' && labels._title.includes('System')) {
+                    displayValue = (v === 'S') ? 'SUSPICIOUS: Recent Reboot' : v;
+                }
+
+                 const div = document.createElement('div');
+                div.className = "flex flex-col border-b border-slate-100 pb-2";
+
+                // Use the labels map to expand compact keys, fallback to raw key
+                const dt = document.createElement('dt');
+                dt.className = "text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1";
+                dt.textContent = labels[k] || k.replace(/_/g, ' ');
+
+                const dd = document.createElement('dd');
+                dd.className = "text-sm font-medium text-slate-800 break-words";
+                dd.textContent = displayValue;
+
+                div.appendChild(dt);
+                div.appendChild(dd);
+                grid.appendChild(div);
+            }
+            wrapper.appendChild(grid);
+            return wrapper;
+        }
+
+        // Boot
+        window.onload = initZeroTrustEngine;
+    </script>
+</body>
+</html>

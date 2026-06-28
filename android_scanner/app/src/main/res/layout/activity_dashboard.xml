@@ -3,127 +3,173 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="#F5F5F7"
     android:scrollbars="none">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingHorizontal="24dp"
-        android:paddingBottom="32dp">
+        android:padding="24dp">
 
         <TextView
-            android:id="@+id/dashboardTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="@string/dashboard_title"
-            android:textColor="@color/apple_black"
+            android:text="Hardware Ledger"
+            android:textColor="#1D1D1F"
             android:textSize="28sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium"
+            android:layout_marginBottom="32dp"/>
 
-        <!-- Trust Score Section -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:orientation="vertical"
             android:gravity="center"
-            android:orientation="vertical">
+            android:layout_marginBottom="24dp">
 
             <TextView
                 android:id="@+id/trustScoreText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-light"
-                android:includeFontPadding="false"
                 android:text="100"
-                android:textColor="@color/apple_green"
-                android:textSize="96sp" />
+                android:textColor="#34C759"
+                android:textSize="96sp"
+                android:fontFamily="sans-serif-light"
+                android:includeFontPadding="false"/>
 
             <TextView
                 android:id="@+id/trustAdviceText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/status_authentic"
-                android:textColor="@color/apple_gray"
-                android:textSize="18sp" />
+                android:text="Processing..."
+                android:textColor="#86868B"
+                android:textSize="18sp"
+                android:fontFamily="sans-serif"
+                android:layout_marginTop="8dp"/>
         </LinearLayout>
 
-        <!-- Stability Card -->
         <androidx.cardview.widget.CardView
-            style="@style/AppleCard"
+            android:id="@+id/warningCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp">
+            app:cardBackgroundColor="#FFE5E5"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone">
+            <TextView
+                android:id="@+id/warningText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:textColor="#FF3B30"
+                android:textStyle="bold"
+                android:textSize="14sp"/>
+        </androidx.cardview.widget.CardView>
 
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            android:layout_marginBottom="16dp">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="20dp">
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/stability_label"
-                    android:textColor="@color/apple_black"
+                    android:text="Forensic Stability"
+                    android:textColor="#1D1D1F"
+                    android:textStyle="bold"
                     android:textSize="16sp"
-                    android:textStyle="bold" />
-
+                    android:layout_marginBottom="8dp"/>
                 <TextView
-                    android:id="@+id/crashesText"
+                    android:id="@+id/stabilityDetailsText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="@string/no_issues_found"
-                    android:textColor="@color/apple_gray"
-                    android:textSize="15sp" />
+                    android:textColor="#86868B"
+                    android:lineSpacingExtra="4dp"
+                    android:textSize="14sp"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Specs Card -->
         <androidx.cardview.widget.CardView
-            style="@style/AppleCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp">
-
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            android:layout_marginBottom="16dp">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="20dp">
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/hardware_details_label"
-                    android:textColor="@color/apple_black"
+                    android:text="Hardware Manifest"
+                    android:textColor="#1D1D1F"
+                    android:textStyle="bold"
                     android:textSize="16sp"
-                    android:textStyle="bold" />
-
+                    android:layout_marginBottom="8dp"/>
                 <TextView
-                    android:id="@+id/cpuGpuText"
+                    android:id="@+id/specsDetailsText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:lineSpacingExtra="8dp"
-                    android:text="CPU\nGPU\nRAM\nMB"
-                    android:textColor="@color/apple_gray"
-                    android:textSize="15sp" />
+                    android:textColor="#86868B"
+                    android:lineSpacingExtra="4dp"
+                    android:textSize="14sp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="#F0F4FF"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            android:layout_marginBottom="24dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Buyer's Physical Checklist"
+                    android:textColor="#007AFF"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:layout_marginBottom="8dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1. Run a 15-minute 4K video stress test.\n2. Smell exhaust vents for burnt electronics.\n3. Inspect I/O ports (USB/HDMI) for bent pins.\n4. Ensure all chassis screws are intact."
+                    android:textColor="#1D1D1F"
+                    android:lineSpacingExtra="6dp"
+                    android:textSize="13sp"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
         <Button
             android:id="@+id/btnBackToHome"
-            style="@style/AppleButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:layout_marginTop="32dp"
-            android:text="@string/btn_done"
-            android:textAllCaps="false" />
+            android:backgroundTint="#007AFF"
+            android:text="Done"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            app:cornerRadius="12dp"
+            android:layout_marginBottom="16dp"/>
 
     </LinearLayout>
 </ScrollView>

@@ -52,12 +52,17 @@ class HistoryActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val item = items[position]
+
+            // Safe JSON fallback parsing
             val cpu = item.payload.optJSONObject("cpu")
-            holder.deviceName.text = cpu?.optString("Name", "Unknown Device") ?: "Unknown Device"
-            
+            val sysName = item.payload.optJSONObject("sys")?.optString("OS_Name", "") ?: ""
+            val cpuName = cpu?.optString("Name", "") ?: ""
+
+            holder.deviceName.text = cpuName.ifEmpty { sysName.ifEmpty { "Unknown Hardware Scan" } }
+
             val sdf = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
             holder.timestamp.text = sdf.format(Date(item.timestamp))
-            
+
             holder.indicator.setBackgroundResource(
                 if (item.isAuthentic) R.drawable.circle_green else R.drawable.circle_red
             )

@@ -56,8 +56,11 @@ class MainActivity : AppCompatActivity() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
-            val preview = Preview.Builder().build().also { it.setSurfaceProvider(viewFinder.surfaceProvider) }
+            val preview = Preview.Builder().build().also {
+                it.setSurfaceProvider(viewFinder.surfaceProvider)
+            }
             val imageAnalyzer = ImageAnalysis.Builder()
+                .setTargetResolution(android.util.Size(1920, 1080))
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
@@ -67,8 +70,17 @@ class MainActivity : AppCompatActivity() {
                 }
             try {
                 cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageAnalyzer)
-            } catch (exc: Exception) { Log.e("Scanner", "Error", exc) }
+                val camera = cameraProvider.bindToLifecycle(
+                    this,
+                    CameraSelector.DEFAULT_BACK_CAMERA,
+                    preview, imageAnalyzer
+                )
+                //Applying a zoom.
+                camera.cameraControl.setLinearZoom(0.15f)
+            }
+            catch (exc: Exception) {
+                Log.e("Scanner", "Error", exc)
+            }
         }, ContextCompat.getMainExecutor(this))
     }
 
