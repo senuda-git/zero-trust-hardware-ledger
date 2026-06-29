@@ -222,7 +222,7 @@ class TrustLayer:
                 version=None,
                 error_correction=qrcode.constants.ERROR_CORRECT_L,  # Lowest overhead for max data
                 box_size=25,
-                border=4,
+                border=5,
             )
             qr.add_data(secure_uri)
             qr.make(fit=True)
