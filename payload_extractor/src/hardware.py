@@ -480,7 +480,7 @@ class HardwareExtractor:
             f.write(f"Generated On: {data.get('Timestamp')}\n\n")
 
             for category, details in data.items():
-                if category == "Timestamp":
+                if category in ("Timestamp", "Unix_Timestamp"):
                     continue
 
                 f.write(f"[{category.replace('_', ' ').upper()}]\n")

@@ -69,7 +69,7 @@ class TrustLayer:
         net = d.get("Network_Adapters") or []
         abuse = d.get("Abuse_History") or {}
         sys_info = d.get("System") or {}
-        timeline = sys_info.get("Timeline") or {} if isinstance(sys_info, dict) else {}
+        timeline = (sys_info.get("Timeline") or {}) if isinstance(sys_info, dict) else {}
 
         compact = {"v": PAYLOAD_VERSION, "t": int(d.get("Unix_Timestamp", 0))}
 
@@ -135,10 +135,10 @@ class TrustLayer:
                     except (ValueError, IndexError): pass
 
                 disk_payload = {
-                "m": s.get("Model"),
-                "sz": size_val,
-                "h": health_code,
-                "w": wear_val,
+                    "m": s.get("Model"),
+                    "sz": size_val,
+                    "h": health_code,
+                    "w": wear_val,
                 }
                 if warn_code:
                     disk_payload["nw"] = warn_code
@@ -199,7 +199,9 @@ class TrustLayer:
             signature = hashlib.sha256(payload_str.encode("utf-8")).hexdigest()
             # Package the raw JSON string alongside its hash
             package = json.dumps({"p": payload_str, "s": signature}, separators=(",", ":"))
-            # Compress and encode for QR
+            # Default zlib stream is the interoperable standard for QR payload transport.
+            # The SPA reads it using the browser-native decompressor when available, with a
+            # proper fallback for legacy environments.
             compressed = zlib.compress(package.encode("utf-8"), level=COMPRESSION_LEVEL)
             encoded = base64.urlsafe_b64encode(compressed).decode("utf-8")
             return f"{GITHUB_PAGES_URL}?d={encoded}"
