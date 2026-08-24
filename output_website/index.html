@@ -171,7 +171,7 @@
                 </div>
             </div>
 
-            <div id="content-expert" class="hidden space-y-6">
+            <div id="content-expert" class="space-y-6" style="display:none">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
                     <h3 class="font-bold text-slate-900 text-xl mb-2">Raw Telemetry Ledger</h3>
                     <p class="text-slate-500 text-sm mb-6">Direct extraction from Windows Management Instrumentation (WMI) and ACPI tables.</p>
@@ -300,11 +300,32 @@
             navigateTo('loading');
 
             try {
-                // Decode URL-safe Base64 → Zlib inflate → JSON parse outer package
-                encodedData = encodedData.replace(/-/g, '+').replace(/_/g, '/');
-                const compressedBytes = Uint8Array.from(atob(encodedData), c => c.charCodeAt(0));
-                const jsonString = new TextDecoder().decode(pako.inflate(compressedBytes));
-                
+                // Decode URL-safe Base64 → zlib inflate → JSON parse outer package.
+                // We intentionally support both modern decompression APIs and the legacy pako path
+                // so QR verification works even when browser capabilities differ.
+                // NOTE: URLSearchParams converts bare '+' into spaces, so we normalize before atob().
+                encodedData = decodeURIComponent(encodedData)
+                    .replace(/\s+/g, '')
+                    .replace(/-/g, '+')
+                    .replace(/_/g, '/');
+                const paddedData = encodedData + '='.repeat((4 - (encodedData.length % 4)) % 4);
+                const compressedBytes = Uint8Array.from(atob(paddedData), c => c.charCodeAt(0));
+
+                let inflatedBytes;
+                if (typeof DecompressionStream !== 'undefined') {
+                    try {
+                        const stream = new Blob([compressedBytes]).stream().pipeThrough(new DecompressionStream('deflate'));
+                        inflatedBytes = new Uint8Array(await new Response(stream).arrayBuffer());
+                    } catch (streamError) {
+                        inflatedBytes = pako.inflate(compressedBytes);
+                    }
+                } else if (typeof pako !== 'undefined' && typeof pako.inflate === 'function') {
+                    inflatedBytes = pako.inflate(compressedBytes);
+                } else {
+                    throw new Error('This browser does not support the required payload decompression method.');
+                }
+
+                const jsonString = new TextDecoder().decode(inflatedBytes);
                 const packageObj = JSON.parse(jsonString);
                 const payloadStr = packageObj.p;
                 const providedSignature = packageObj.s;
