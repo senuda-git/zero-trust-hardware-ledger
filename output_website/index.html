@@ -303,7 +303,11 @@
                 // Decode URL-safe Base64 → zlib inflate → JSON parse outer package.
                 // We intentionally support both modern decompression APIs and the legacy pako path
                 // so QR verification works even when browser capabilities differ.
-                encodedData = encodedData.replace(/-/g, '+').replace(/_/g, '/');
+                // NOTE: URLSearchParams converts bare '+' into spaces, so we normalize before atob().
+                encodedData = decodeURIComponent(encodedData)
+                    .replace(/\s+/g, '')
+                    .replace(/-/g, '+')
+                    .replace(/_/g, '/');
                 const paddedData = encodedData + '='.repeat((4 - (encodedData.length % 4)) % 4);
                 const compressedBytes = Uint8Array.from(atob(paddedData), c => c.charCodeAt(0));
 
